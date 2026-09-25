@@ -1,137 +1,107 @@
-# PyCaret
+# Who is about to leave?
 
-Predicting employee attrition using PyCaret — comparing 10+ models in one line of code, then tuning and interpreting the best one.
+**A talent risk problem, solved with people data.**
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/wsamuelw/pycaret/blob/main/Pycaret_Demo.ipynb)
+Replacing a leaver can cost **50–200% of salary**. HR usually finds out at the resignation email. I help teams see **who is at risk earlier** — so retention conversations happen before the offer letter.
 
-## Problem
+---
 
-Employee attrition is expensive — replacing a worker costs 50–200% of their salary. The goal: build a model that predicts which employees are likely to leave, so HR can intervene early. The challenge is doing it fast without sacrificing model quality.
+## The stake
 
-## Approach
+Attrition is expensive and slow to notice. Engagement surveys are lagging. Exit interviews are too late. The question is not “do we have a retention problem?” It is **“who should we talk to this quarter?”**
 
-PyCaret's low-code API lets you go from raw data to a tuned, interpreted model in minutes:
+## The story
 
-1. **Setup** — load data, configure target (`left`), set seed for reproducibility
-2. **Compare** — benchmark all available classifiers in one call
-3. **Create** — train a Random Forest with 10-fold cross-validation
-4. **Tune** — optimise hyperparameters automatically
-5. **Interpret** — SHAP values explain what drives attrition
-6. **Predict** — generate predictions on held-out data
-7. **Finalise** — retrain on full training set for deployment
+You have people data: satisfaction, performance review, hours, projects, tenure, promotions, accidents.
 
-## Results
+Instead of a dashboard of averages, I built a **binary classifier** — stayed vs left — and then asked *why*:
+
+1. **Benchmark many models** quickly (don’t guess the algorithm)  
+2. **Pick a strong one** (random forest here)  
+3. **Tune it**  
+4. **Explain it** with SHAP — what actually drives risk  
+5. **Score** a holdout so you know it generalises  
+
+**Outcome on this build:**
+- Full workflow from raw table → tuned model → **explainable risk drivers**  
+- Focus on **actionable signals** (satisfaction, load, tenure), not black-box scores alone  
+- Same pattern fits **customer churn** (you already have that case study) and HR retention  
+
+> **The commercial idea:** retention budget goes to the people most at risk — not to everyone who is mildly unhappy.
+
+---
+
+## What that looks like in your world
+
+| You have | I turn it into |
+|----------|----------------|
+| HRIS / survey / review exports | **Risk scores** per employee |
+| “We lose good people every year” | **Who** + **why** (drivers) |
+| Retention offers for everyone | A short **priority list** for managers |
+| Model nobody trusts | SHAP-style **explanation** for the CHRO |
+
+**Typical engagement:** define “leave” in your window → build scores on your data → manager-ready list + the levers (hours, recognition, promotion lag).
+
+**[Talk to me about retention →](https://datafying.co/#contactus)** · [datafying](https://datafying.co/)
+
+---
+
+## Why people & product leaders bring me in
+
+- Speaks **cost of replacement** and manager actions, not AutoML slang  
+- Shows **what drives leaving** so HR can fix the system, not just flag names  
+- Fast model comparison without a six-month data science programme  
+- Clear ethics/limits: score ≠ punishment; use for support  
+
+---
+
+## Proof of craft *(technical)*
+
+### Job
+Binary classification: `left` ∈ {0, 1}.
+
+### Workflow (PyCaret)
+```
+setup → compare_models → create_model('rf') → tune_model
+→ plot_model / evaluate_model → interpret_model (SHAP)
+→ predict_model → finalize_model
+```
 
 | Stage | Detail |
 |-------|--------|
-| Dataset | Employee attrition (PyCaret built-in) |
-| Target | `left` (0 = stayed, 1 = left) |
-| Best model | Random Forest (selected after `compare_models`) |
+| Data | Employee attrition (PyCaret built-in) — satisfaction, evaluation, hours, projects, tenure, promotion |
+| Best model | Random Forest after multi-model benchmark |
 | CV | 10-fold |
-| Tuning | Auto-tuned (default search space) |
-| Interpretability | SHAP values |
+| Interpretation | SHAP |
 
-## What's Inside
+### Why this stack
+- **Speed** — answer the business question in one sitting  
+- **Comparison** — 10+ classifiers before committing  
+- **Explainability** — leadership can read the drivers  
 
-The notebook walks through the full PyCaret classification workflow:
+### Limits (honesty)
+- Built-in demo data — **your** HR definitions and fairness rules must replace it  
+- Don’t use scores to punish; use them to **support**  
+- Legal/privacy review before scoring real people  
+- Drift: retrain when the org changes  
 
-```
-setup() → compare_models() → create_model('rf') → tune_model() → 
-plot_model() → evaluate_model() → interpret_model() → predict_model() → finalize_model()
-```
+---
 
-Each step is one function call — PyCaret handles preprocessing, cross-validation, and evaluation internally.
-
-## Setup
-
-### Google Colab
-
-Click the badge above — no setup required.
-
-### Local
+## Reproduce
 
 ```bash
-pip install pycaret[full] shap
-git clone https://github.com/wsamuelw/pycaret.git
-cd pycaret
-jupyter notebook Pycaret_Demo.ipynb
+git clone https://github.com/47096/talent-attrition.git
+cd talent-attrition
+pip install -r requirements.txt
+jupyter notebook analysis.ipynb
 ```
 
-Install the `[full]` version for XGBoost and additional models in `compare_models()`.
+**Stack:** Python · `pycaret` · `shap`
 
-## Data
+---
 
-**Employee Attrition** — included via PyCaret's built-in datasets. Contains employee demographics, salary, satisfaction scores, and whether they left the company.
+## Next step
 
-| Key Feature | Description |
-|-------------|------------|
-| `left` | Target — did the employee leave? |
-| satisfaction_level | Last satisfaction score |
-| last_evaluation | Last performance review |
-| number_project | Projects worked on |
-| average_montly_hours | Average monthly hours |
-| time_spend_company | Years at company |
-| Work_accident | Had a workplace accident |
-| promotion_last_5years | Promoted in last 5 years |
+If leavers are costing you budget and manager time — that is the engagement I run.
 
-## Key PyCaret Functions
-
-**`compare_models()`** — trains and evaluates every classifier available, returns the best one:
-
-```python
-best = compare_models()  # runs all models, returns the winner
-```
-
-**`create_model()`** — trains a specific model with cross-validation:
-
-```python
-rf = create_model('rf')  # Random Forest with 10-fold CV
-```
-
-**`tune_model()`** — hyperparameter search with built-in grid/random search:
-
-```python
-tuned = tune_model(rf)  # auto-tunes hyperparameters
-```
-
-**`interpret_model()`** — SHAP-based feature importance:
-
-```python
-interpret_model(tuned)  # shows which features drive predictions
-```
-
-**`predict_model()`** — generates predictions on new data:
-
-```python
-predictions = predict_model(tuned, data=new_data)
-```
-
-## Why PyCaret?
-
-- **Speed** — go from data to tuned model in ~10 lines of code
-- **Benchmarks** — `compare_models()` tests everything, no guessing which algorithm to try
-- **Built-in CV** — every model is cross-validated by default
-- **SHAP integration** — `interpret_model()` gives explainability out of the box
-- **Reproducibility** — `session_id` seeds every step
-
-## When NOT to Use PyCaret
-
-- **Production pipelines** — PyCaret is great for exploration, but production systems need more control
-- **Custom preprocessing** — if your data needs domain-specific transformations, do them before `setup()`
-- **Deep learning** — PyCaret is tree/linear-model focused; for neural networks, use TensorFlow/PyTorch directly
-
-## Tech Stack
-
-- **PyCaret** — low-code ML framework
-- **scikit-learn** — underlying model implementations
-- **SHAP** — model interpretability
-
-## References
-
-- [PyCaret classification docs](https://pycaret.org/classification1/)
-- [Beginner's guide to end-to-end ML](https://towardsdatascience.com/a-beginners-guide-to-end-to-end-machine-learning-a42949e15a47)
-- [SHAP documentation](https://shap.readthedocs.io/)
-
-## License
-
-MIT
+**[Book a conversation →](https://datafying.co/#contactus)** · Customer & people analytics · [datafying](https://datafying.co/)
